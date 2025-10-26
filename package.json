@@ -10,10 +10,12 @@
   },
   "dependencies": {
     "appwrite": "^21.2.1",
+    "immer": "^10.2.0",
     "next": "16.0.0",
     "node-appwrite": "^20.2.1",
     "react": "19.2.0",
-    "react-dom": "19.2.0"
+    "react-dom": "19.2.0",
+    "zustand": "^5.0.8"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
