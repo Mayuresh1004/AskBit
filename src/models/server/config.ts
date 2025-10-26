@@ -1,5 +1,6 @@
 import env from '@/src/app/env'
-import {Avatars, Client, Databases, Storage, Users} from "node-appwrite"
+import {Avatars, Client, Databases, Storage, TablesDB, Users} from "node-appwrite"
+import { db, questionCollection } from '../name';
 
 let client = new Client();
 
@@ -10,9 +11,12 @@ client
 ;
 
 
-const databases = new Databases(client)
+const tablesDB = new TablesDB(client);
+const database = new Databases(client)
 const avatars = new Avatars(client);
 const storage = new Storage(client);
 const users = new Users(client)
 
-export { client, databases, users, avatars, storage };
+
+
+export { client,database, tablesDB, users, avatars, storage };

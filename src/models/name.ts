@@ -1,6 +1,6 @@
-export const db = "main-askify"
+export const db = "main-askbit"
 export const questionCollection = "questions"
 export const answerCollection = "answers"
 export const commentCollection = "comments"
 export const voteCollection = "votes"
-export const questionAttachmentBucket = "question-attachment"
+export const questionAttachmentBucket = "question-attachment" 
