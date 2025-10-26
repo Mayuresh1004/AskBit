@@ -50,7 +50,7 @@ export const useAuthStore = create<IAuthStore>()(
 
             async verifySession() {
                 try {
-                    const session await account.getSession("current")
+                    const session = await account.getSession("current")
                     set({session})
                 } catch (error) {
                     console.log(error);
@@ -94,7 +94,7 @@ export const useAuthStore = create<IAuthStore>()(
             async logout() {
                 try {
                     await account.deleteSessions()
-                    set({session:null,jwt:null,user: null })
+                    set({session:null,jnpx shadcn@latest add inputwt:null,user: null })
                 } catch (error) {
                     console.log(error);
                     
