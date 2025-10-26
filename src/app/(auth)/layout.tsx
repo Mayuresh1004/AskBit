@@ -1,5 +1,7 @@
-import { useRouter } from "next/router";
-import { useAuthStore } from "../store/Auth"
+"use client"
+
+import { useRouter } from "next/navigation";
+import { useAuthStore } from "../../store/Auth"
 import React from "react";
 
 const Layout = ({children}: {children: React.ReactNode}) => {

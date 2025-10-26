@@ -32,7 +32,7 @@ export async function POST(request: NextRequest){
             const QuestionOrAnswer = await tablesDB.getRow({
                 databaseId: db,
                 tableId: type==="question"? questionCollection : answerCollection ,
-                rowId: response.rows[0].$id,
+                rowId: typeId,
                 queries: [
                     Query.equal("type",type==="question"? questionCollection : answerCollection ),
                     Query.equal("typeId",typeId ),
@@ -65,7 +65,7 @@ export async function POST(request: NextRequest){
              const QuestionOrAnswer = await tablesDB.getRow({
                 databaseId: db,
                 tableId: type==="question"? questionCollection : answerCollection ,
-                rowId: response.rows[0].$id,
+                rowId: typeId,
                 queries: [
                     Query.equal("type",type==="question"? questionCollection : answerCollection ),
                     Query.equal("typeId",typeId ),
@@ -114,7 +114,7 @@ export async function POST(request: NextRequest){
         return NextResponse.json(
             {
                 data: {
-                    row: null, voteResult: upvotes.total = downvotes.total
+                    row: null, voteResult: upvotes.total - downvotes.total
                 },
                 message: "message handled"
             },

@@ -94,7 +94,7 @@ export const useAuthStore = create<IAuthStore>()(
             async logout() {
                 try {
                     await account.deleteSessions()
-                    set({session:null,jnpx shadcn@latest add inputwt:null,user: null })
+                    set({session:null,jwt:null,user: null })
                 } catch (error) {
                     console.log(error);
                     

@@ -59,7 +59,7 @@ const QuestionCard = ({ ques }: { ques: Models.Row }) => {
                         >
                             {ques.author.name}
                         </Link>
-                        <strong>&quot;{ques.author.reputation}&quot;</strong>
+                        <strong>{ques.author.reputation}</strong>
                     </div>
                     <span>asked {convertDateToRelativeTime(new Date(ques.$createdAt))}</span>
                 </div>

@@ -36,8 +36,9 @@ const Comments = ({
                 tableId: commentCollection,
                 rowId: ID.unique(),
                 data: {
-                    questionId: typeId,
-                    answerId: type === "answer" ? typeId : null,
+                    type: type,
+                    typeId: typeId,
+                    // answerId: type === "answer" ? typeId : null,
                     content: newComment,
                     authorId: user.$id,
                 },
