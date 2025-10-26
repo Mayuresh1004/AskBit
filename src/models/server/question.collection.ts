@@ -7,7 +7,7 @@ export default async function createQuestionTable() {
   const databaseId = db;
   const tableId = questionCollection;
 
-  // 1️⃣ Create the table
+  // Create table
   await tablesDB.createTable({
     databaseId,
     tableId,
@@ -22,31 +22,31 @@ export default async function createQuestionTable() {
 
   console.log("✅ Question Table created.");
 
-  //create columns
+  // Create columns
   await Promise.all([
-    tablesDB.createStringColumn(databaseId,tableId,'title',100,true),
-    tablesDB.createStringColumn(databaseId,tableId,'content',10000,true),
-    tablesDB.createStringColumn(databaseId,tableId,'authorId',100,true),
-    tablesDB.createStringColumn(databaseId,tableId,'tags',100,true,undefined,true),
-    tablesDB.createStringColumn(databaseId,tableId,'attachmentId',100,false),
-  ])
+    tablesDB.createStringColumn(databaseId, tableId, 'title', 100, true),
+    tablesDB.createStringColumn(databaseId, tableId, 'content', 10000, true),
+    tablesDB.createStringColumn(databaseId, tableId, 'authorId', 100, true),
+    tablesDB.createStringColumn(databaseId, tableId, 'tags', 100, true, undefined, true),
+    tablesDB.createStringColumn(databaseId, tableId, 'attachmentId', 100, false),
+  ]);
 
-  // 2️⃣ Create indexes
+  console.log("⏳ Waiting for column availability...");
+  await new Promise((resolve) => setTimeout(resolve, 3000)); // Important delay
+
+  // Create indexes ✅ correct field names
   const indexes = [
-    { field: 'title', type: IndexType.Fulltext },
-    { field: 'content', type: IndexType.Fulltext },
-    { field: 'authorId', type: IndexType.Fulltext },
-    { field: 'tags', type: IndexType.Fulltext },
-    { field: 'attachmentId', type: IndexType.Fulltext },
+    { column: 'title', type: IndexType.Fulltext },
+    { column: 'content', type: IndexType.Fulltext },
   ];
 
   for (const idx of indexes) {
     await tablesDB.createIndex({
       databaseId,
       tableId,
-      key: `${idx.field}_index`,
+      key: `${idx.column}_index`,
       type: idx.type,
-      columns: [idx.field],
+      columns: [idx.column],
       orders: ['asc'],
     });
   }
