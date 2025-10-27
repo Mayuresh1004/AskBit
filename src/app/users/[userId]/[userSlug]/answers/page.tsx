@@ -1,8 +1,8 @@
-import Pagination from "@/components/Pagination";
-import { MarkdownPreview } from "@/components/RTE";
-import { answerCollection, db, questionCollection } from "@/models/name";
-import { tablesDB } from "@/models/server/config";
-import slugify from "@/utils/slugify";
+import Pagination from "@/src/components/Pagination";
+import { MarkdownPreview } from "@/src/components/RTE";
+import { answerCollection, db, questionCollection } from "@/src/models/name";
+import { tablesDB } from "@/src/models/server/config";
+import slugify from "@/src/utils/slugify";
 import Link from "next/link";
 import { Query } from "node-appwrite";
 import React from "react";
@@ -11,14 +11,13 @@ const Page = async ({
     params,
     searchParams,
 }: {
-    params: Promise<{ userId: string; userSlug: string }>;
+    params: { userId: string; userSlug: string };
     searchParams: { page?: string };
 }) => {
-    const { userId, userSlug } = await params;
     searchParams.page ||= "1";
 
     const queries = [
-        Query.equal("authorId", userId),
+        Query.equal("authorId", params.userId),
         Query.orderDesc("$createdAt"),
         Query.offset((+searchParams.page - 1) * 25),
         Query.limit(25),

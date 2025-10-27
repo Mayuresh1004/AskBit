@@ -1,8 +1,8 @@
-import { answerCollection, db } from "@/models/name";
-import { tablesDB, users } from "@/models/server/config";
+import { answerCollection, db } from "@/src/models/name";
+import { tablesDB, users } from "@/src/models/server/config";
 import { NextRequest, NextResponse } from "next/server";
 import { ID } from "node-appwrite";
-import { UserPrefs } from '@/store/Auth'
+import { UserPrefs } from '@/src/store/Auth'
 
 export async function POST(request: NextRequest){
     try {

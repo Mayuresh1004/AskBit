@@ -1,7 +1,7 @@
-import { avatars } from "@/models/client/config";
-import { users } from "@/models/server/config";
-import { UserPrefs } from "@/store/Auth";
-import convertDateToRelativeTime from "@/utils/relativeTime";
+import { avatars } from "@/src/models/client/config";
+import { users } from "@/src/models/server/config";
+import { UserPrefs } from "@/src/store/Auth";
+import convertDateToRelativeTime from "@/src/utils/relativeTime";
 import React from "react";
 import EditButton from "./EditButton";
 import { IconClockFilled, IconUserFilled } from "@tabler/icons-react";
@@ -12,10 +12,9 @@ const Layout = async ({
     params,
 }: {
     children: React.ReactNode;
-    params: Promise<{ userId: string; userSlug: string }>;
+    params: { userId: string; userSlug: string };
 }) => {
-    const { userId, userSlug } = await params;
-    const user = await users.get<UserPrefs>(userId);
+    const user = await users.get<UserPrefs>(params.userId);
 
     return (
         <div className="container mx-auto space-y-4 px-4 pb-20 pt-32">
@@ -23,7 +22,7 @@ const Layout = async ({
                 <div className="w-40 shrink-0">
                     <picture className="block w-full">
                         <img
-                            src={avatars.getInitials(user.name, 200, 200)}
+                            src={avatars.getInitials(user.name, 200, 200).href}
                             alt={user.name}
                             className="h-full w-full rounded-xl object-cover"
                         />

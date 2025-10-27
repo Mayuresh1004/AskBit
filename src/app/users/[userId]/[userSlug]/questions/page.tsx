@@ -1,8 +1,8 @@
-import Pagination from "@/components/Pagination";
-import QuestionCard from "@/components/QuestionCard";
-import { answerCollection, db, questionCollection, voteCollection } from "@/models/name";
-import { tablesDB, users } from "@/models/server/config";
-import { UserPrefs } from "@/store/Auth";
+import Pagination from "@/src/components/Pagination";
+import QuestionCard from "@/src/components/QuestionCard";
+import { answerCollection, db, questionCollection, voteCollection } from "@/src/models/name";
+import { tablesDB, users } from "@/src/models/server/config";
+import { UserPrefs } from "@/src/store/Auth";
 import { Query } from "node-appwrite";
 import React from "react";
 
@@ -10,14 +10,13 @@ const Page = async ({
     params,
     searchParams,
 }: {
-    params: Promise<{ userId: string; userSlug: string }>;
+    params: { userId: string; userSlug: string };
     searchParams: { page?: string };
 }) => {
-    const { userId, userSlug } = await params;
     searchParams.page ||= "1";
 
     const queries = [
-        Query.equal("authorId", userId),
+        Query.equal("authorId", params.userId),
         Query.orderDesc("$createdAt"),
         Query.offset((+searchParams.page - 1) * 25),
         Query.limit(25),
@@ -72,7 +71,7 @@ const Page = async ({
             </div>
             <div className="mb-4 max-w-3xl space-y-6">
                 {questions.rows.map(ques => (
-                    <QuestionCard key={ques.$id} ques={ques as any} />
+                    <QuestionCard key={ques.$id} ques={ques} />
                 ))}
             </div>
             <Pagination total={questions.total} limit={25} />

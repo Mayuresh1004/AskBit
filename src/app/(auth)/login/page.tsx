@@ -1,11 +1,12 @@
 "use client"
 
-import { Input } from '@/components/ui/input'
-import { useAuthStore } from '@/store/Auth'
+import { Input } from '@/src/components/ui/input'
+import { useAuthStore } from '@/src/store/Auth'
 import { Label } from '@radix-ui/react-label'
 import { IconBrandGithub, IconBrandGoogle } from '@tabler/icons-react'
 import Link from 'next/link'
-import React, { useState, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import React, { useState } from 'react'
 
 type DivProps = React.HTMLAttributes<HTMLDivElement>
 
@@ -30,13 +31,9 @@ const BottomGradient: React.FC = () => {
 function LoginPage() {
 
     const {login} = useAuthStore()
+    const router = useRouter()
     const [isLoading,setIsLoading] = useState(false)
     const [error,setError] = useState("")
-    const [mounted, setMounted] = useState(false)
-
-    useEffect(() => {
-        setMounted(true)
-    }, [])
 
     const handleSubmit = async(e:React.FormEvent<HTMLFormElement>) => {
         e.preventDefault()
@@ -63,110 +60,83 @@ function LoginPage() {
     
         if (loginResponse.error) {
             setError(()=>loginResponse.error!.message)
+            setIsLoading(false)
+        } else {
+            // Redirect to questions page after successful login
+            router.push("/questions")
         }
-       
-    
-       setIsLoading(false)
     
       }
 
-    if (!mounted) {
-        return (
-            <div className="relative min-h-screen overflow-hidden bg-black">
-                <div className="flex min-h-screen items-center justify-center">
-                    <div className="text-lg text-white">Loading...</div>
-                </div>
-            </div>
-        )
-    }
-
    return (
-        <div className="relative min-h-screen overflow-hidden bg-black">
-            {/* Background Effects */}
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 via-purple-900/20 to-pink-900/20" />
-            <div className="absolute inset-0 bg-[url('/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]" />
-            
-            <div className="relative z-10 flex min-h-screen items-center justify-center px-4">
-                <div className="w-full max-w-md">
-                    <div className="rounded-2xl border border-white/10 bg-white/5 p-8 backdrop-blur-sm">
-                        <div className="text-center">
-                            <h2 className="mb-2 bg-gradient-to-r from-white via-gray-200 to-gray-400 bg-clip-text text-3xl font-bold text-transparent">
-                                Welcome Back
-                            </h2>
-                            <p className="text-gray-400">
-                                Sign in to your AskBit account
-                            </p>
-                        </div>
+        <div className="mx-auto w-full max-w-md rounded-none border border-solid border-white/30 bg-white p-4 shadow-input dark:bg-black md:rounded-2xl md:p-8">
+            <h2 className="text-xl font-bold text-neutral-800 dark:text-neutral-200">
+                Login to Riverflow
+            </h2>
+            <p className="mt-2 max-w-sm text-sm text-neutral-600 dark:text-neutral-300">
+                Login to riverflow
+                <br /> If you don&apos;t have an account,{" "}
+                <Link href="/register" className="text-orange-500 hover:underline">
+                    register
+                </Link>{" "}
+                with riverflow
+            </p>
 
-                        {error && (
-                            <p className="mt-4 text-center text-sm text-red-400">{error}</p>
-                        )}
-                        
-                        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-                            <LabelInputContainer className="space-y-2">
-                                <Label htmlFor="email" className="text-white">Email Address</Label>
-                                <Input
-                                    className="bg-white/10 border-white/20 text-white placeholder:text-gray-400 focus:border-blue-500 focus:bg-white/20"
-                                    id="email"
-                                    name="email"
-                                    placeholder="projectmayhem@fc.com"
-                                    type="email"
-                                />
-                            </LabelInputContainer>
-                            
-                            <LabelInputContainer className="space-y-2">
-                                <Label htmlFor="password" className="text-white">Password</Label>
-                                <Input 
-                                    className="bg-white/10 border-white/20 text-white placeholder:text-gray-400 focus:border-blue-500 focus:bg-white/20" 
-                                    id="password" 
-                                    name="password" 
-                                    placeholder="••••••••" 
-                                    type="password" 
-                                />
-                            </LabelInputContainer>
+            {error && (
+                <p className="mt-8 text-center text-sm text-red-500 dark:text-red-400">{error}</p>
+            )}
+            <form className="my-8" onSubmit={handleSubmit}>
+                <LabelInputContainer className="mb-4">
+                    <Label htmlFor="email">Email Address</Label>
+                    <Input
+                    className="text-black"
+                        id="email"
+                        name="email"
+                        placeholder="projectmayhem@fc.com"
+                        type="email"
+                    />
+                </LabelInputContainer>
+                <LabelInputContainer className="mb-4">
+                    <Label htmlFor="password">Password</Label>
+                    <Input className="text-black" id="password" name="password" placeholder="••••••••" type="password" />
+                </LabelInputContainer>
 
-                            <button
-                                className="w-full rounded-lg bg-gradient-to-r from-blue-500 to-purple-500 px-4 py-3 font-semibold text-white transition-all hover:from-blue-600 hover:to-purple-600 hover:shadow-lg disabled:opacity-50"
-                                type="submit"
-                                disabled={isLoading}
-                                suppressHydrationWarning
-                            >
-                                {isLoading ? "Signing in..." : "Sign in"}
-                            </button>
+                <button
+                    className="group/btn relative block h-10 w-full rounded-md bg-gradient-to-br from-black to-neutral-600 font-medium text-white shadow-[0px_1px_0px_0px_#ffffff40_inset,0px_-1px_0px_0px_#ffffff40_inset] dark:bg-zinc-800 dark:from-zinc-900 dark:to-zinc-900 dark:shadow-[0px_1px_0px_0px_var(--zinc-800)_inset,0px_-1px_0px_0px_var(--zinc-800)_inset]"
+                    type="submit"
+                    disabled={isLoading}
+                >
+                    Log in &rarr;
+                    <BottomGradient />
+                </button>
 
-                            <div className="my-6 h-[1px] w-full bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+                <div className="my-8 h-[1px] w-full bg-gradient-to-r from-transparent via-neutral-300 to-transparent dark:via-neutral-700" />
 
-                            <div className="flex flex-col space-y-4">
-                                <button
-                                    className="flex h-12 w-full items-center justify-center space-x-2 rounded-lg bg-white/10 px-4 font-medium text-white transition-all hover:bg-white/20"
-                                    type="button"
-                                    disabled={isLoading}
-                                    suppressHydrationWarning
-                                >
-                                    <IconBrandGoogle className="h-5 w-5" />
-                                    <span>Continue with Google</span>
-                                </button>
-                                <button
-                                    className="flex h-12 w-full items-center justify-center space-x-2 rounded-lg bg-white/10 px-4 font-medium text-white transition-all hover:bg-white/20"
-                                    type="button"
-                                    disabled={isLoading}
-                                    suppressHydrationWarning
-                                >
-                                    <IconBrandGithub className="h-5 w-5" />
-                                    <span>Continue with GitHub</span>
-                                </button>
-                            </div>
-                        </form>
-                        
-                        <div className="mt-6 text-center text-sm">
-                            <span className="text-gray-400">Don&apos;t have an account? </span>
-                            <Link href="/register" className="font-medium text-blue-400 hover:text-blue-300">
-                                Sign up
-                            </Link>
-                        </div>
-                    </div>
+                <div className="flex flex-col space-y-4">
+                    <button
+                        className="group/btn relative flex h-10 w-full items-center justify-start space-x-2 rounded-md bg-gray-50 px-4 font-medium text-black shadow-input dark:bg-zinc-900 dark:shadow-[0px_0px_1px_1px_var(--neutral-800)]"
+                        type="button"
+                        disabled={isLoading}
+                    >
+                        <IconBrandGoogle className="h-4 w-4 text-neutral-800 dark:text-neutral-300" />
+                        <span className="text-sm text-neutral-700 dark:text-neutral-300">
+                            Google
+                        </span>
+                        <BottomGradient />
+                    </button>
+                    <button
+                        className="group/btn relative flex h-10 w-full items-center justify-start space-x-2 rounded-md bg-gray-50 px-4 font-medium text-black shadow-input dark:bg-zinc-900 dark:shadow-[0px_0px_1px_1px_var(--neutral-800)]"
+                        type="button"
+                        disabled={isLoading}
+                    >
+                        <IconBrandGithub className="h-4 w-4 text-neutral-800 dark:text-neutral-300" />
+                        <span className="text-sm text-neutral-700 dark:text-neutral-300">
+                            GitHub
+                        </span>
+                        <BottomGradient />
+                    </button>
                 </div>
-            </div>
+            </form>
         </div>
     );
 }

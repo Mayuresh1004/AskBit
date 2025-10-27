@@ -3,32 +3,20 @@
 import { ID, Models } from "appwrite";
 import React from "react";
 import VoteButtons from "./VoteButtons";
-import { useAuthStore } from "@/store/Auth";
-import { avatars, tablesDB } from "@/models/client/config";
-import { answerCollection, db } from "@/models/name";
+import { useAuthStore } from "@/src/store/Auth";
+import { avatars, tablesDB } from "@/src/models/client/config";
+import { answerCollection, db } from "@/src/models/name";
 import RTE, { MarkdownPreview } from "./RTE";
 import Comments from "./Comments";
-import slugify from "@/utils/slugify";
+import slugify from "@/src/utils/slugify";
 import Link from "next/link";
 import { IconTrash } from "@tabler/icons-react";
-
-type ProcessedAnswer = Models.Row & {
-    content: string;
-    author: {
-        $id: string;
-        name: string;
-        reputation: number;
-    };
-    upvotesRows: Models.RowList<Models.Row>;
-    downvotesRows: Models.RowList<Models.Row>;
-    comments: Models.RowList<Models.Row>;
-};
 
 const Answers = ({
     answers: _answers,
     questionId,
 }: {
-    answers: Models.RowList<ProcessedAnswer>;
+    answers: Models.RowList<Models.Row>;
     questionId: string;
 }) => {
     const [answers, setAnswers] = React.useState(_answers);
@@ -106,7 +94,7 @@ const Answers = ({
                             upvotes={answer.upvotesRows}
                             downvotes={answer.downvotesRows}
                         />
-                        {user?.$id === answer.author?.$id ? (
+                        {user?.$id === answer.authorId ? (
                             <button
                                 className="flex h-10 w-10 items-center justify-center rounded-full border border-red-500 p-1 text-red-500 duration-200 hover:bg-red-500/10"
                                 onClick={() => deleteAnswer(answer.$id)}
@@ -120,7 +108,7 @@ const Answers = ({
                         <div className="mt-4 flex items-center justify-end gap-1">
                             <picture>
                                 <img
-                                    src={avatars.getInitials(answer.author.name, 36, 36)}
+                                    src={avatars.getInitials(answer.author.name, 36, 36).href}
                                     alt={answer.author.name}
                                     className="rounded-lg"
                                 />
@@ -138,7 +126,7 @@ const Answers = ({
                             </div>
                         </div>
                         <Comments
-                            comments={answer.comments as any}
+                            comments={answer.comments}
                             className="mt-4"
                             type="answer"
                             typeId={answer.$id}

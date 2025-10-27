@@ -1,4 +1,4 @@
-import env from '@/app/env'
+import env from '@/src/app/env'
 import {Avatars, Client, Databases, Storage, TablesDB, Users} from "node-appwrite"
 import { db, questionCollection } from '../name';
 

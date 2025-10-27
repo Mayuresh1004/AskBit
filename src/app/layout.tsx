@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Navigation from "@/components/Navigation";
+import ClientLayout from "./ClientLayout";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AskBit - The Ultimate Q&A Platform",
-  description: "Ask questions, get expert answers, and build your reputation in our community",
+  title: "AskBit - Ask and Answer Questions",
+  description: "A platform to ask and answer questions",
 };
 
 export default function RootLayout({
@@ -26,10 +26,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-black text-white`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Navigation />
-        {children}
+        <ClientLayout>{children}</ClientLayout>
       </body>
     </html>
   );

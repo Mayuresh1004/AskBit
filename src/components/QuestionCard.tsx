@@ -4,23 +4,12 @@ import React from "react";
 import { BorderBeam } from "./magicui/border-beam";
 import Link from "next/link";
 import { Models } from "appwrite";
-import slugify from "@/utils/slugify";
-import { avatars } from "@/models/client/config";
-import convertDateToRelativeTime from "@/utils/relativeTime";
+import slugify from "@/src/utils/slugify";
+import { avatars } from "@/src/models/client/config";
+import convertDateToRelativeTime from "@/src/utils/relativeTime";
+import { IconMessageCircle, IconThumbUp } from "@tabler/icons-react";
 
-type ProcessedQuestion = Models.Row & {
-    title: string;
-    tags: string[];
-    totalVotes: number;
-    totalAnswers: number;
-    author: {
-        $id: string;
-        name: string;
-        reputation: number;
-    };
-};
-
-const QuestionCard = ({ ques }: { ques: ProcessedQuestion }) => {
+const QuestionCard = ({ ques }: { ques: Models.Row }) => {
     const [height, setHeight] = React.useState(0);
     const ref = React.useRef<HTMLDivElement>(null);
 
@@ -33,76 +22,80 @@ const QuestionCard = ({ ques }: { ques: ProcessedQuestion }) => {
     return (
         <div
             ref={ref}
-            className="group relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-white/5 to-white/10 p-6 backdrop-blur-sm transition-all duration-300 hover:border-white/20 hover:bg-white/10 hover:shadow-2xl hover:shadow-blue-500/10"
+            className="group relative overflow-hidden rounded-xl border border-white/20 bg-white/5 p-6 transition-all duration-300 hover:border-white/40 hover:bg-white/10 hover:shadow-xl"
         >
             <BorderBeam size={height} duration={12} delay={9} />
             
-            {/* Gradient overlay */}
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-purple-500/5 to-pink-500/5 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-            
-            <div className="relative flex flex-col gap-6 sm:flex-row">
-                {/* Stats */}
-                <div className="flex shrink-0 flex-row gap-6 text-center sm:flex-col sm:text-right">
-                    <div className="flex flex-col items-center">
-                        <div className="text-2xl font-bold text-white">{ques.totalVotes}</div>
-                        <div className="text-xs text-gray-400">votes</div>
+            <div className="relative flex flex-col gap-6">
+                {/* Title and Stats Row */}
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
+                    <div className="flex-1">
+                        <Link
+                            href={`/questions/${ques.$id}/${slugify(ques.title)}`}
+                            className="group-hover:text-orange-400 transition-colors duration-200"
+                        >
+                            <h2 className="text-xl font-semibold text-white">
+                                {ques.title}
+                            </h2>
+                        </Link>
                     </div>
-                    <div className="flex flex-col items-center">
-                        <div className="text-2xl font-bold text-white">{ques.totalAnswers}</div>
-                        <div className="text-xs text-gray-400">answers</div>
+                    
+                    {/* Stats */}
+                    <div className="flex shrink-0 gap-4 text-sm sm:flex-col sm:gap-2">
+                        <div className="flex items-center gap-2">
+                            <IconThumbUp className="h-4 w-4 text-gray-400" />
+                            <span className="font-medium text-white">{ques.totalVotes}</span>
+                            <span className="text-gray-400">votes</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <IconMessageCircle className="h-4 w-4 text-gray-400" />
+                            <span className="font-medium text-white">{ques.totalAnswers}</span>
+                            <span className="text-gray-400">answers</span>
+                        </div>
                     </div>
                 </div>
-                
-                {/* Content */}
-                <div className="relative w-full">
-                    <Link
-                        href={`/questions/${ques.$id}/${slugify(ques.title)}`}
-                        className="block transition-colors duration-200 hover:text-blue-400"
-                    >
-                        <h2 className="mb-3 text-xl font-semibold text-white group-hover:text-blue-400 sm:text-2xl">
-                            {ques.title}
-                        </h2>
-                    </Link>
-                    
-                    {/* Tags */}
-                    <div className="mb-4 flex flex-wrap gap-2">
+
+                {/* Tags */}
+                {ques.tags && ques.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
                         {ques.tags.map((tag: string) => (
                             <Link
                                 key={tag}
                                 href={`/questions?tag=${tag}`}
-                                className="inline-block rounded-full bg-gradient-to-r from-blue-500/20 to-purple-500/20 px-3 py-1 text-xs font-medium text-blue-300 transition-all duration-200 hover:from-blue-500/30 hover:to-purple-500/30 hover:scale-105"
+                                className="inline-block rounded-lg bg-white/10 px-3 py-1 text-xs font-medium text-orange-400 transition-all duration-200 hover:bg-white/20 hover:text-orange-300"
                             >
                                 #{tag}
                             </Link>
                         ))}
                     </div>
-                    
-                    {/* Author and time */}
-                    <div className="flex flex-wrap items-center justify-between gap-3 text-sm">
+                )}
+
+                {/* Author and Time */}
+                <div className="flex flex-wrap items-center gap-4 text-sm text-gray-400">
+                    <div className="flex items-center gap-2">
+                        <picture>
+                            <img
+                                src={avatars.getInitials(ques.author.name, 32, 32).href}
+                                alt={ques.author.name}
+                                className="rounded-full"
+                            />
+                        </picture>
                         <div className="flex items-center gap-2">
-                            <picture>
-                                <img
-                                    src={avatars.getInitials(ques.author.name, 32, 32)}
-                                    alt={ques.author.name}
-                                    className="rounded-full ring-2 ring-white/20"
-                                />
-                            </picture>
-                            <div className="flex flex-col">
-                                <Link
-                                    href={`/users/${ques.author.$id}/${slugify(ques.author.name)}`}
-                                    className="font-medium text-blue-400 transition-colors duration-200 hover:text-blue-300"
-                                >
-                                    {ques.author.name}
-                                </Link>
-                                <span className="text-xs text-gray-400">
-                                    {ques.author.reputation} reputation
-                                </span>
-                            </div>
-                        </div>
-                        <div className="text-gray-400">
-                            asked {convertDateToRelativeTime(new Date(ques.$createdAt))}
+                            <Link
+                                href={`/users/${ques.author.$id}/${slugify(ques.author.name)}`}
+                                className="font-medium text-white hover:text-orange-400 transition-colors"
+                            >
+                                {ques.author.name}
+                            </Link>
+                            <span className="flex items-center gap-1 text-orange-500">
+                                <IconThumbUp className="h-3 w-3" />
+                                {ques.author.reputation}
+                            </span>
                         </div>
                     </div>
+                    <span className="text-gray-500">
+                        asked {convertDateToRelativeTime(new Date(ques.$createdAt))}
+                    </span>
                 </div>
             </div>
         </div>

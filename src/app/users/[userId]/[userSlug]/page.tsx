@@ -1,20 +1,19 @@
-import { tablesDB, users } from "@/models/server/config";
-import { UserPrefs } from "@/store/Auth";
+import { tablesDB, users } from "@/src/models/server/config";
+import { UserPrefs } from "@/src/store/Auth";
 import React from "react";
-import { MagicCard, MagicContainer } from "@/components/magicui/magic-card";
-import { answerCollection, db, questionCollection } from "@/models/name";
+import { MagicCard, MagicContainer } from "@/src/components/magicui/magic-card";
+import { answerCollection, db, questionCollection } from "@/src/models/name";
 import { Query } from "node-appwrite";
-import { NumberTicker } from "@/components/magicui/number-ticker";
+import { NumberTicker } from "@/src/components/magicui/number-ticker";
 
-const Page = async ({ params }: { params: Promise<{ userId: string; userSlug: string }> }) => {
-    const { userId, userSlug } = await params;
+const Page = async ({ params }: { params: { userId: string; userSlug: string } }) => {
     const [user, questions, answers] = await Promise.all([
-        users.get<UserPrefs>(userId),
+        users.get<UserPrefs>(params.userId),
         tablesDB.listRows({
             databaseId: db,
             tableId: questionCollection,
             queries: [
-                Query.equal("authorId", userId),
+                Query.equal("authorId", params.userId),
                 Query.limit(1), // for optimization
             ],
         }),
@@ -22,7 +21,7 @@ const Page = async ({ params }: { params: Promise<{ userId: string; userSlug: st
             databaseId: db,
             tableId: answerCollection,
             queries: [
-                Query.equal("authorId", userId),
+                Query.equal("authorId", params.userId),
                 Query.limit(1), // for optimization
             ],
         }),

@@ -64,8 +64,11 @@ export const useAuthStore = create<IAuthStore>()(
                     }
                     
                     set({ session, user });
-                } catch (error) {
-                    console.error("Session verification failed:", error);
+                } catch (error: any) {
+                    // Don't log as error if it's just "no session" (which is expected when logged out)
+                    if (error?.code !== 401 && error?.response?.code !== 401) {
+                        console.error("Session verification failed:", error);
+                    }
                     // ✅ Clear invalid session data
                     set({ session: null, user: null, jwt: null });
                 }
@@ -73,6 +76,14 @@ export const useAuthStore = create<IAuthStore>()(
 
             async login(email: string, password: string) {
                 try {
+                    // ✅ Delete any existing sessions first
+                    try {
+                        await account.deleteSessions();
+                    } catch (error) {
+                        // Ignore if no session exists
+                        console.log("No existing sessions to delete");
+                    }
+
                     const session = await account.createEmailPasswordSession(email, password);
                     const [user, { jwt }] = await Promise.all([
                         account.get<UserPrefs>(),

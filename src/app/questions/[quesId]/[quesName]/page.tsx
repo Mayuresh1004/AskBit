@@ -1,8 +1,8 @@
-import Answers from "@/components/Answers";
-import Comments from "@/components/Comments";
-import { MarkdownPreview } from "@/components/RTE";
-import VoteButtons from "@/components/VoteButtons";
-import { avatars } from "@/models/client/config";
+import Answers from "@/src/components/Answers";
+import Comments from "@/src/components/Comments";
+import { MarkdownPreview } from "@/src/components/RTE";
+import VoteButtons from "@/src/components/VoteButtons";
+import { avatars } from "@/src/models/client/config";
 import {
     answerCollection,
     db,
@@ -10,24 +10,24 @@ import {
     questionCollection,
     commentCollection,
     questionAttachmentBucket,
-} from "@/models/name";
-import { tablesDB, users } from "@/models/server/config";
-import { storage } from "@/models/client/config";
-import { UserPrefs } from "@/store/Auth";
-import convertDateToRelativeTime from "@/utils/relativeTime";
-import slugify from "@/utils/slugify";
-import { IconEdit } from "@tabler/icons-react";
+} from "@/src/models/name";
+import { tablesDB, users } from "@/src/models/server/config";
+import { storage } from "@/src/models/client/config";
+import { UserPrefs } from "@/src/store/Auth";
+import convertDateToRelativeTime from "@/src/utils/relativeTime";
+import slugify from "@/src/utils/slugify";
+import { IconEdit, IconMessageCircle, IconThumbUp } from "@tabler/icons-react";
 import Link from "next/link";
 import { Query } from "node-appwrite";
 import React from "react";
-import { TracingBeam } from "@/components/ui/tracing-beam";
 import DeleteQuestion from "./DeleteQuestion";
 import EditQuestion from "./EditQuestion";
-import { Particles } from "@/components/magicui/particles";
-import { ShimmerButton } from "@/components/magicui/shimmer-button";
+import { Particles } from "@/src/components/magicui/particles";
+import { ShimmerButton } from "@/src/components/magicui/shimmer-button";
 
 const Page = async ({ params }: { params: Promise<{ quesId: string; quesName: string }> }) => {
     const { quesId, quesName } = await params;
+    
     const [question, answers, upvotes, downvotes, comments] = await Promise.all([
         tablesDB.getRow({
             databaseId: db,
@@ -154,24 +154,30 @@ const Page = async ({ params }: { params: Promise<{ quesId: string; quesName: st
     ]);
 
     return (
-        <TracingBeam className="container pl-6">
+        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
             <Particles
-                className="fixed inset-0 h-full w-full"
-                quantity={500}
-                ease={100}
+                className="absolute inset-0"
+                quantity={80}
+                ease={80}
                 color="#ffffff"
                 refresh
             />
-            <div className="relative mx-auto px-4 pb-20 pt-36">
+            <div className="relative mx-auto max-w-6xl px-4 pb-20 pt-6">
                 <div className="flex">
                     <div className="w-full">
-                        <h1 className="mb-1 text-3xl font-bold">{question.title}</h1>
-                        <div className="flex gap-4 text-sm">
-                            <span>
+                                <h1 className="mb-3 text-4xl font-bold bg-gradient-to-r from-white via-white to-orange-300 bg-clip-text text-transparent">{question.title}</h1>
+                        <div className="flex flex-wrap gap-4 text-sm">
+                            <span className="flex items-center gap-2 rounded-lg bg-white/10 px-3 py-1.5 text-gray-200">
                                 Asked {convertDateToRelativeTime(new Date(question.$createdAt))}
                             </span>
-                            <span>Answer {answers.total}</span>
-                            <span>Votes {upvotes.total + downvotes.total}</span>
+                            <span className="flex items-center gap-1.5 rounded-lg bg-blue-500/20 px-3 py-1.5 text-blue-300">
+                                <IconMessageCircle className="h-4 w-4" />
+                                {answers.total} {answers.total === 1 ? 'answer' : 'answers'}
+                            </span>
+                            <span className="flex items-center gap-1.5 rounded-lg bg-green-500/20 px-3 py-1.5 text-green-300">
+                                <IconThumbUp className="h-4 w-4" />
+                                {upvotes.total + downvotes.total} {upvotes.total + downvotes.total === 1 ? 'vote' : 'votes'}
+                            </span>
                         </div>
                     </div>
                     <Link href="/questions/ask" className="ml-auto inline-block shrink-0">
@@ -182,7 +188,7 @@ const Page = async ({ params }: { params: Promise<{ quesId: string; quesName: st
                         </ShimmerButton>
                     </Link>
                 </div>
-                <hr className="my-4 border-white/40" />
+                <div className="my-6 h-px bg-gradient-to-r from-transparent via-orange-500/40 to-transparent"></div>
                 <div className="flex gap-4">
                     <div className="flex shrink-0 flex-col items-center gap-4">
                         <VoteButtons
@@ -200,62 +206,72 @@ const Page = async ({ params }: { params: Promise<{ quesId: string; quesName: st
                         <DeleteQuestion questionId={question.$id} authorId={question.authorId} />
                     </div>
                     <div className="w-full overflow-auto">
-                        <MarkdownPreview className="rounded-xl p-4" source={question.content} />
-                        <picture>
-                            <img
-                                src={
-                                    storage.getFilePreview(
-                                        questionAttachmentBucket,
-                                        question.attachmentId
-                                    )
-                                }
-                                alt={question.title}
-                                className="mt-3 rounded-lg"
+                        <div className="rounded-xl border border-orange-500/30 p-6 backdrop-blur-sm shadow-xl shadow-orange-500/10">
+                            <MarkdownPreview 
+                                className="prose prose-invert max-w-none prose-headings:text-white prose-p:text-gray-100 prose-a:text-orange-400 prose-strong:text-white prose-code:text-orange-300 [&>div]:bg-transparent [&>div]:text-gray-100 [&>div>p]:text-gray-100" 
+                                data-color-mode="dark"
+                                source={question.content} 
                             />
-                        </picture>
-                        <div className="mt-3 flex flex-wrap items-center gap-3 text-sm">
-                            {question.tags.map((tag: string) => (
-                                <Link
-                                    key={tag}
-                                    href={`/questions?tag=${tag}`}
-                                    className="inline-block rounded-lg bg-white/10 px-2 py-0.5 duration-200 hover:bg-white/20"
-                                >
-                                    #{tag}
-                                </Link>
-                            ))}
                         </div>
-                        <div className="mt-4 flex items-center justify-end gap-1">
+                        {question.attachmentId && (
                             <picture>
                                 <img
-                                    src={avatars.getInitials(author.name, 36, 36)}
+                                    src={
+                                        storage.getFilePreview(
+                                            questionAttachmentBucket,
+                                            question.attachmentId
+                                        ).href
+                                    }
+                                    alt={question.title}
+                                    className="mt-3 rounded-lg"
+                                />
+                            </picture>
+                        )}
+                        {question.tags && question.tags.length > 0 && (
+                            <div className="mt-4 flex flex-wrap items-center gap-2">
+                                {question.tags.map((tag: string) => (
+                                    <Link
+                                        key={tag}
+                                        href={`/questions?tag=${tag}`}
+                                        className="group inline-block rounded-lg border border-orange-500/30 bg-orange-500/10 px-3 py-1.5 text-sm font-semibold text-orange-300 transition-all duration-200 hover:border-orange-400 hover:bg-orange-500/20 hover:text-orange-200 hover:shadow-lg hover:shadow-orange-500/20"
+                                    >
+                                        #{tag}
+                                    </Link>
+                                ))}
+                            </div>
+                        )}
+                        <div className="mt-6 flex items-center justify-end gap-3 rounded-xl border border-orange-500/20 p-4 backdrop-blur-sm">
+                            <picture>
+                                <img
+                                    src={avatars.getInitials(author.name, 48, 48).href}
                                     alt={author.name}
-                                    className="rounded-lg"
+                                    className="rounded-full ring-2 ring-orange-500/30"
                                 />
                             </picture>
                             <div className="block leading-tight">
                                 <Link
                                     href={`/users/${author.$id}/${slugify(author.name)}`}
-                                    className="text-orange-500 hover:text-orange-600"
+                                    className="block font-bold text-lg text-white hover:text-orange-400 transition-colors"
                                 >
                                     {author.name}
                                 </Link>
-                                <p>
-                                    <strong>{author.prefs.reputation}</strong>
+                                <p className="text-sm text-gray-300">
+                                    Reputation: <span className="rounded-full bg-orange-500/20 px-2 py-0.5 font-semibold text-orange-400">{author.prefs.reputation}</span>
                                 </p>
                             </div>
                         </div>
                         <Comments
-                            comments={comments as any}
+                            comments={comments}
                             className="mt-4"
                             type="question"
                             typeId={question.$id}
                         />
-                        <hr className="my-4 border-white/40" />
+                        <div className="my-6 h-px bg-gradient-to-r from-transparent via-orange-500/40 to-transparent"></div>
                     </div>
                 </div>
-                <Answers answers={answers as any} questionId={question.$id} />
+                <Answers answers={answers} questionId={question.$id} />
             </div>
-        </TracingBeam>
+        </div>
     );
 };
 

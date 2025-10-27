@@ -1,24 +1,15 @@
 "use client";
 
-import { tablesDB } from "@/models/client/config";
-import { commentCollection, db } from "@/models/name";
-import { useAuthStore } from "@/store/Auth";
-import { cn } from "@/lib/utils"
-import convertDateToRelativeTime from "@/utils/relativeTime";
-import slugify from "@/utils/slugify";
+import { tablesDB } from "@/src/models/client/config";
+import { commentCollection, db } from "@/src/models/name";
+import { useAuthStore } from "@/src/store/Auth";
+import { cn } from "@/src/lib/utils"
+import convertDateToRelativeTime from "@/src/utils/relativeTime";
+import slugify from "@/src/utils/slugify";
 import { IconTrash } from "@tabler/icons-react";
 import { ID, Models } from "appwrite";
 import Link from "next/link";
 import React from "react";
-
-type ProcessedComment = Models.Row & {
-    content: string;
-    author: {
-        $id: string;
-        name: string;
-        reputation: number;
-    };
-};
 
 const Comments = ({
     comments: _comments,
@@ -26,7 +17,7 @@ const Comments = ({
     typeId,
     className,
 }: {
-    comments: Models.RowList<ProcessedComment>;
+    comments: Models.RowList<Models.Row>;
     type: "question" | "answer";
     typeId: string;
     className?: string;
@@ -56,7 +47,7 @@ const Comments = ({
             setNewComment(() => "");
             setComments(prev => ({
                 total: prev.total + 1,
-                rows: [{ ...response, author: user } as any, ...prev.rows],
+                rows: [{ ...response, author: user }, ...prev.rows],
             }));
         } catch (error: any) {
             window.alert(error?.message || "Error creating comment");
@@ -89,7 +80,7 @@ const Comments = ({
                         <p className="text-sm">
                             {comment.content} -{" "}
                             <Link
-                                href={`/users/${comment.author.$id}/${slugify(comment.author.name)}`}
+                                href={`/users/${comment.authorId}/${slugify(comment.author.name)}`}
                                 className="text-orange-500 hover:text-orange-600"
                             >
                                 {comment.author.name}
@@ -98,7 +89,7 @@ const Comments = ({
                                 {convertDateToRelativeTime(new Date(comment.$createdAt))}
                             </span>
                         </p>
-                        {user?.$id === comment.author.$id ? (
+                        {user?.$id === comment.authorId ? (
                             <button
                                 onClick={() => deleteComment(comment.$id)}
                                 className="shrink-0 text-red-500 hover:text-red-600"

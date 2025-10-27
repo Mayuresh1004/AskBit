@@ -1,6 +1,6 @@
 import { IndexType, Permission } from 'node-appwrite';
 import { tablesDB } from './config';
-import env from '@/app/env';
+import env from '@/src/app/env';
 import { answerCollection, db } from '../name';
 
 export default async function createAnswerTable() {
