@@ -1,32 +1,50 @@
+// src/app/layout.tsx
 "use client"
 
-import { useRouter } from "next/navigation";
-import { useAuthStore } from "../../store/Auth"
-import React from "react";
+import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
+import "./globals.css";
+import { useEffect } from "react";
+import { useAuthStore } from "../store/Auth";
 
-const Layout = ({children}: {children: React.ReactNode}) => {
-    const {session} = useAuthStore();
-    const router = useRouter()
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
 
-    React.useEffect(()=>{
-        if (session) {
-            router.push("/")
-        }
-    },[session,router])
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
 
+function RootLayoutContent({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const { hydrated, verifySession } = useAuthStore();
 
-    if (session) {
-        return null
+  useEffect(() => {
+    if (hydrated) {
+      verifySession();
     }
+  }, [hydrated, verifySession]);
 
-    return(
-        <div className="">
-            <div className="">
-                {children}
-            </div>
-        </div>
-    )
-
+  return (
+    <html lang="en">
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      >
+        {children}
+      </body>
+    </html>
+  );
 }
 
-export default Layout
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return <RootLayoutContent>{children}</RootLayoutContent>;
+}

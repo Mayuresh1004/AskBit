@@ -50,54 +50,83 @@ export const useAuthStore = create<IAuthStore>()(
 
             async verifySession() {
                 try {
-                    const session = await account.getSession("current")
-                    set({session})
-                } catch (error) {
-                    console.log(error);
+                    const session = await account.getSession("current");
                     
-                }
-            },
-
-            async login(email:string, password:string) {
-
-                try {
-                    const session = await account.createEmailPasswordSession(email, password)
-                    const [user,{jwt}] = await Promise.all([
-                        account.get<UserPrefs>(),
-                        account.createJWT()
-
-                    ]);
-
+                    // ✅ Also fetch user data when verifying session
+                    const user = await account.get<UserPrefs>();
+                    
+                    // ✅ Initialize reputation if not set
                     if (!user.prefs?.reputation) {
                         await account.updatePrefs<UserPrefs>({
                             reputation: 0
-                        })
+                        });
+                        user.prefs = { reputation: 0 };
                     }
-                    set({session,user,jwt})
-
-                } catch (error) {
-                    console.log(error);
-
                     
+                    set({ session, user });
+                } catch (error) {
+                    console.error("Session verification failed:", error);
+                    // ✅ Clear invalid session data
+                    set({ session: null, user: null, jwt: null });
                 }
             },
-            async createAccount(name:string, email:string, password:string) {
-                
+
+            async login(email: string, password: string) {
                 try {
-                    await account.create(ID.unique(),email,password,name) 
-                    return {success: true}
-                } catch (error) {
-                    console.log(error);
+                    const session = await account.createEmailPasswordSession(email, password);
+                    const [user, { jwt }] = await Promise.all([
+                        account.get<UserPrefs>(),
+                        account.createJWT()
+                    ]);
+
+                    // ✅ Initialize reputation if not set
+                    if (!user.prefs?.reputation) {
+                        await account.updatePrefs<UserPrefs>({
+                            reputation: 0
+                        });
+                        // ✅ Update local user object
+                        user.prefs = { reputation: 0 };
+                    }
                     
+                    set({ session, user, jwt });
+
+                    return { success: true, error: null };
+                } catch (error) {
+                    console.error("Login error:", error);
+                    return { 
+                        success: false, 
+                        error: error as AppwriteException 
+                    };
                 }
             },
+
+            async createAccount(name: string, email: string, password: string) {
+                try {
+                    await account.create(ID.unique(), email, password, name);
+                    
+                    // ✅ Optional: Auto-login after account creation
+                    // Uncomment if you want automatic login
+                    // const loginResult = await this.login(email, password);
+                    // return loginResult;
+                    
+                    return { success: true, error: null };
+                } catch (error) {
+                    console.error("Create account error:", error);
+                    return { 
+                        success: false, 
+                        error: error as AppwriteException 
+                    };
+                }
+            },
+            
             async logout() {
                 try {
-                    await account.deleteSessions()
-                    set({session:null,jwt:null,user: null })
+                    await account.deleteSessions();
+                    set({ session: null, jwt: null, user: null });
                 } catch (error) {
-                    console.log(error);
-                    
+                    console.error("Logout error:", error);
+                    // ✅ Clear session even if logout fails
+                    set({ session: null, jwt: null, user: null });
                 }
             },
         })),
