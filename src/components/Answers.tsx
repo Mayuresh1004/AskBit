@@ -11,12 +11,13 @@ import Comments from "./Comments";
 import slugify from "@/src/utils/slugify";
 import Link from "next/link";
 import { IconTrash } from "@tabler/icons-react";
+import { Answer, Comment, Vote, User } from "@/src/types/database";
 
 const Answers = ({
     answers: _answers,
     questionId,
 }: {
-    answers: Models.RowList<Models.Row>;
+    answers: Answer[];
     questionId: string;
 }) => {
     const [answers, setAnswers] = React.useState(_answers);
@@ -42,19 +43,16 @@ const Answers = ({
             if (!response.ok) throw data;
 
             setNewAnswer(() => "");
-            setAnswers(prev => ({
-                total: prev.total + 1,
-                rows: [
-                    {
-                        ...data,
-                        author: user,
-                        upvotesRows: { rows: [], total: 0 },
-                        downvotesRows: { rows: [], total: 0 },
-                        comments: { rows: [], total: 0 },
-                    },
-                    ...prev.rows,
-                ],
-            }));
+            setAnswers(prev => [
+                {
+                    ...data,
+                    author: user,
+                    upvotesRows: [],
+                    downvotesRows: [],
+                    comments: [],
+                },
+                ...prev,
+            ]);
         } catch (error: any) {
             window.alert(error?.message || "Error creating answer");
         }
@@ -73,10 +71,7 @@ const Answers = ({
 
             if (!response.ok) throw data;
 
-            setAnswers(prev => ({
-                total: prev.total - 1,
-                rows: prev.rows.filter(answer => answer.$id !== answerId),
-            }));
+            setAnswers(prev => prev.filter(answer => answer.$id !== answerId));
         } catch (error: any) {
             window.alert(error?.message || "Error deleting answer");
         }
@@ -84,15 +79,15 @@ const Answers = ({
 
     return (
         <>
-            <h2 className="mb-4 text-xl">{answers.total} Answers</h2>
-            {answers.rows.map(answer => (
+            <h2 className="mb-4 text-xl">{answers.length} Answers</h2>
+            {answers.map(answer => (
                 <div key={answer.$id} className="flex gap-4">
                     <div className="flex shrink-0 flex-col items-center gap-4">
                         <VoteButtons
                             type="answer"
                             id={answer.$id}
-                            upvotes={answer.upvotesRows}
-                            downvotes={answer.downvotesRows}
+                            upvotes={answer.upvotesRows || []}
+                            downvotes={answer.downvotesRows || []}
                         />
                         {user?.$id === answer.authorId ? (
                             <button
@@ -108,25 +103,25 @@ const Answers = ({
                         <div className="mt-4 flex items-center justify-end gap-1">
                             <picture>
                                 <img
-                                    src={avatars.getInitials(answer.author.name, 36, 36).href}
-                                    alt={answer.author.name}
+                                    src={avatars.getInitials(answer.author?.name || 'Unknown', 36, 36).toString()}
+                                    alt={answer.author?.name || 'Unknown'}
                                     className="rounded-lg"
                                 />
                             </picture>
                             <div className="block leading-tight">
                                 <Link
-                                    href={`/users/${answer.author.$id}/${slugify(answer.author.name)}`}
+                                    href={`/users/${answer.author?.$id}/${slugify(answer.author?.name || 'Unknown')}`}
                                     className="text-orange-500 hover:text-orange-600"
                                 >
-                                    {answer.author.name}
+                                    {answer.author?.name || 'Unknown'}
                                 </Link>
                                 <p>
-                                    <strong>{answer.author.reputation}</strong>
+                                    <strong>{answer.author?.reputation || 0}</strong>
                                 </p>
                             </div>
                         </div>
                         <Comments
-                            comments={answer.comments}
+                            comments={answer.comments || []}
                             className="mt-4"
                             type="answer"
                             typeId={answer.$id}

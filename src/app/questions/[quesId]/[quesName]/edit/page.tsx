@@ -58,7 +58,7 @@ const EditQuestionPage = ({ params }: { params: { quesId: string } }) => {
             />
             <div className="relative mx-auto max-w-4xl px-4 pb-20 pt-36">
                 <h1 className="mb-8 text-3xl font-bold">Edit Question</h1>
-                <QuestionForm question={question} />
+                <QuestionForm question={question as any} />
             </div>
         </TracingBeam>
     );

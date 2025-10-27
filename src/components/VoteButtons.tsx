@@ -8,6 +8,7 @@ import { IconCaretUpFilled, IconCaretDownFilled } from "@tabler/icons-react";
 import { ID, Models, Query } from "appwrite";
 import { useRouter } from "next/navigation";
 import React from "react";
+import { Vote } from "@/src/types/database";
 
 const VoteButtons = ({
     type,
@@ -18,12 +19,12 @@ const VoteButtons = ({
 }: {
     type: "question" | "answer";
     id: string;
-    upvotes: Models.RowList<Models.Row>;
-    downvotes: Models.RowList<Models.Row>;
+    upvotes: Vote[];
+    downvotes: Vote[];
     className?: string;
 }) => {
-    const [votedRow, setVotedRow] = React.useState<Models.Row | null>(); // undefined means not fetched yet
-    const [voteResult, setVoteResult] = React.useState<number>(upvotes.total - downvotes.total);
+    const [votedRow, setVotedRow] = React.useState<Vote | null>(); // undefined means not fetched yet
+    const [voteResult, setVoteResult] = React.useState<number>(upvotes.length - downvotes.length);
 
     const { user } = useAuthStore();
     const router = useRouter();
@@ -40,7 +41,7 @@ const VoteButtons = ({
                         Query.equal("votedById", user.$id),
                     ],
                 });
-                setVotedRow(() => response.rows[0] || null);
+                setVotedRow(() => (response as any).documents[0] || null);
             }
         })();
     }, [user, id, type]);

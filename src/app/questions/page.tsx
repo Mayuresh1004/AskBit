@@ -143,7 +143,7 @@ const Page = async ({
                 {questions.rows.length > 0 ? (
                     <div className="mb-8 space-y-4">
                         {questions.rows.map(ques => (
-                            <QuestionCard key={ques.$id} ques={ques} />
+                            <QuestionCard key={ques.$id} ques={ques as any} />
                         ))}
                     </div>
                 ) : (

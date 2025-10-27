@@ -14,6 +14,7 @@ import {
 import { tablesDB, users } from "@/src/models/server/config";
 import { storage } from "@/src/models/client/config";
 import { UserPrefs } from "@/src/store/Auth";
+import { Question, Answer, Comment, Vote, User } from "@/src/types/database";
 import convertDateToRelativeTime from "@/src/utils/relativeTime";
 import slugify from "@/src/utils/slugify";
 import { IconEdit, IconMessageCircle, IconThumbUp } from "@tabler/icons-react";
@@ -33,7 +34,7 @@ const Page = async ({ params }: { params: Promise<{ quesId: string; quesName: st
             databaseId: db,
             tableId: questionCollection,
             rowId: quesId,
-        }),
+        }) as unknown as Promise<Question>,
         tablesDB.listRows({
             databaseId: db,
             tableId: answerCollection,
@@ -41,7 +42,7 @@ const Page = async ({ params }: { params: Promise<{ quesId: string; quesName: st
                 Query.orderDesc("$createdAt"),
                 Query.equal("questionId", quesId),
             ],
-        }),
+        }) as unknown as Promise<{ documents: Answer[] }>,
         tablesDB.listRows({
             databaseId: db,
             tableId: voteCollection,
@@ -51,7 +52,7 @@ const Page = async ({ params }: { params: Promise<{ quesId: string; quesName: st
                 Query.equal("voteStatus", "upvoted"),
                 Query.limit(1), // for optimization
             ],
-        }),
+        }) as unknown as Promise<{ documents: Vote[] }>,
         tablesDB.listRows({
             databaseId: db,
             tableId: voteCollection,
@@ -61,7 +62,7 @@ const Page = async ({ params }: { params: Promise<{ quesId: string; quesName: st
                 Query.equal("voteStatus", "downvoted"),
                 Query.limit(1), // for optimization
             ],
-        }),
+        }) as unknown as Promise<{ documents: Vote[] }>,
         tablesDB.listRows({
             databaseId: db,
             tableId: commentCollection,
@@ -70,14 +71,14 @@ const Page = async ({ params }: { params: Promise<{ quesId: string; quesName: st
                 Query.equal("typeId", quesId),
                 Query.orderDesc("$createdAt"),
             ],
-        }),
+        }) as unknown as Promise<{ documents: Comment[] }>,
     ]);
 
     // since it is dependent on the question, we fetch it here outside of the Promise.all
     const author = await users.get<UserPrefs>(question.authorId);
-    [comments.rows, answers.rows] = await Promise.all([
+    const [commentsData, answersData] = await Promise.all([
         Promise.all(
-            comments.rows.map(async comment => {
+            comments.documents.map(async comment => {
                 const author = await users.get<UserPrefs>(comment.authorId);
                 return {
                     ...comment,
@@ -90,7 +91,7 @@ const Page = async ({ params }: { params: Promise<{ quesId: string; quesName: st
             })
         ),
         Promise.all(
-            answers.rows.map(async answer => {
+            answers.documents.map(async answer => {
                 const [author, comments, upvotes, downvotes] = await Promise.all([
                     users.get<UserPrefs>(answer.authorId),
                     tablesDB.listRows({
@@ -101,7 +102,7 @@ const Page = async ({ params }: { params: Promise<{ quesId: string; quesName: st
                             Query.equal("type", "answer"),
                             Query.orderDesc("$createdAt"),
                         ],
-                    }),
+                    }) as unknown as Promise<{ documents: Comment[] }>,
                     tablesDB.listRows({
                         databaseId: db,
                         tableId: voteCollection,
@@ -111,7 +112,7 @@ const Page = async ({ params }: { params: Promise<{ quesId: string; quesName: st
                             Query.equal("voteStatus", "upvoted"),
                             Query.limit(1), // for optimization
                         ],
-                    }),
+                    }) as unknown as Promise<{ documents: Vote[] }>,
                     tablesDB.listRows({
                         databaseId: db,
                         tableId: voteCollection,
@@ -121,11 +122,11 @@ const Page = async ({ params }: { params: Promise<{ quesId: string; quesName: st
                             Query.equal("voteStatus", "downvoted"),
                             Query.limit(1), // for optimization
                         ],
-                    }),
+                    }) as unknown as Promise<{ documents: Vote[] }>,
                 ]);
 
-                comments.rows = await Promise.all(
-                    comments.rows.map(async comment => {
+                const commentsWithAuthors = await Promise.all(
+                    comments.documents.map(async comment => {
                         const author = await users.get<UserPrefs>(comment.authorId);
                         return {
                             ...comment,
@@ -140,9 +141,9 @@ const Page = async ({ params }: { params: Promise<{ quesId: string; quesName: st
 
                 return {
                     ...answer,
-                    comments,
-                    upvotesRows: upvotes,
-                    downvotesRows: downvotes,
+                    comments: commentsWithAuthors,
+                    upvotesRows: upvotes.documents,
+                    downvotesRows: downvotes.documents,
                     author: {
                         $id: author.$id,
                         name: author.name,
@@ -172,11 +173,11 @@ const Page = async ({ params }: { params: Promise<{ quesId: string; quesName: st
                             </span>
                             <span className="flex items-center gap-1.5 rounded-lg bg-blue-500/20 px-3 py-1.5 text-blue-300">
                                 <IconMessageCircle className="h-4 w-4" />
-                                {answers.total} {answers.total === 1 ? 'answer' : 'answers'}
+                                {answersData.length} {answersData.length === 1 ? 'answer' : 'answers'}
                             </span>
                             <span className="flex items-center gap-1.5 rounded-lg bg-green-500/20 px-3 py-1.5 text-green-300">
                                 <IconThumbUp className="h-4 w-4" />
-                                {upvotes.total + downvotes.total} {upvotes.total + downvotes.total === 1 ? 'vote' : 'votes'}
+                                {upvotes.documents.length + downvotes.documents.length} {upvotes.documents.length + downvotes.documents.length === 1 ? 'vote' : 'votes'}
                             </span>
                         </div>
                     </div>
@@ -195,8 +196,8 @@ const Page = async ({ params }: { params: Promise<{ quesId: string; quesName: st
                             type="question"
                             id={question.$id}
                             className="w-full"
-                            upvotes={upvotes}
-                            downvotes={downvotes}
+                            upvotes={upvotes.documents}
+                            downvotes={downvotes.documents}
                         />
                         <EditQuestion
                             questionId={question.$id}
@@ -220,7 +221,7 @@ const Page = async ({ params }: { params: Promise<{ quesId: string; quesName: st
                                         storage.getFilePreview(
                                             questionAttachmentBucket,
                                             question.attachmentId
-                                        ).href
+                                        ).toString()
                                     }
                                     alt={question.title}
                                     className="mt-3 rounded-lg"
@@ -243,7 +244,7 @@ const Page = async ({ params }: { params: Promise<{ quesId: string; quesName: st
                         <div className="mt-6 flex items-center justify-end gap-3 rounded-xl border border-orange-500/20 p-4 backdrop-blur-sm">
                             <picture>
                                 <img
-                                    src={avatars.getInitials(author.name, 48, 48).href}
+                                    src={avatars.getInitials(author.name, 48, 48).toString()}
                                     alt={author.name}
                                     className="rounded-full ring-2 ring-orange-500/30"
                                 />
@@ -261,7 +262,7 @@ const Page = async ({ params }: { params: Promise<{ quesId: string; quesName: st
                             </div>
                         </div>
                         <Comments
-                            comments={comments}
+                            comments={commentsData as any}
                             className="mt-4"
                             type="question"
                             typeId={question.$id}
@@ -269,7 +270,7 @@ const Page = async ({ params }: { params: Promise<{ quesId: string; quesName: st
                         <div className="my-6 h-px bg-gradient-to-r from-transparent via-orange-500/40 to-transparent"></div>
                     </div>
                 </div>
-                <Answers answers={answers} questionId={question.$id} />
+                <Answers answers={answersData as any} questionId={question.$id} />
             </div>
         </div>
     );

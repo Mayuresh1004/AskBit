@@ -14,6 +14,7 @@ import { tablesDB, storage } from "@/src/models/client/config";
 import { db, questionAttachmentBucket, questionCollection } from "@/src/models/name";
 import confetti from "canvas-confetti";
 import { Meteors } from "./magicui/meteors";
+import { Question } from "@/src/types/database";
 
 const LabelInputContainer = ({
     children,
@@ -40,7 +41,7 @@ const LabelInputContainer = ({
  * ![INFO]: for buttons, refer to https://ui.aceternity.com/components/tailwindcss-buttons
  * ******************************************************************************
  */
-const QuestionForm = ({ question }: { question?: Models.Row }) => {
+const QuestionForm = ({ question }: { question?: Question }) => {
     const { user } = useAuthStore();
     const [tag, setTag] = React.useState("");
     const router = useRouter();

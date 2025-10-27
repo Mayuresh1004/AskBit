@@ -8,8 +8,9 @@ import slugify from "@/src/utils/slugify";
 import { avatars } from "@/src/models/client/config";
 import convertDateToRelativeTime from "@/src/utils/relativeTime";
 import { IconMessageCircle, IconThumbUp } from "@tabler/icons-react";
+import { Question, User } from "@/src/types/database";
 
-const QuestionCard = ({ ques }: { ques: Models.Row }) => {
+const QuestionCard = ({ ques }: { ques: Question }) => {
     const [height, setHeight] = React.useState(0);
     const ref = React.useRef<HTMLDivElement>(null);
 
@@ -75,21 +76,21 @@ const QuestionCard = ({ ques }: { ques: Models.Row }) => {
                     <div className="flex items-center gap-2">
                         <picture>
                             <img
-                                src={avatars.getInitials(ques.author.name, 32, 32).href}
-                                alt={ques.author.name}
+                                src={avatars.getInitials(ques.author?.name || 'Unknown', 32, 32).toString()}
+                                alt={ques.author?.name || 'Unknown'}
                                 className="rounded-full"
                             />
                         </picture>
                         <div className="flex items-center gap-2">
                             <Link
-                                href={`/users/${ques.author.$id}/${slugify(ques.author.name)}`}
+                                href={`/users/${ques.author?.$id}/${slugify(ques.author?.name || 'Unknown')}`}
                                 className="font-medium text-white hover:text-orange-400 transition-colors"
                             >
-                                {ques.author.name}
+                                {ques.author?.name || 'Unknown'}
                             </Link>
                             <span className="flex items-center gap-1 text-orange-500">
                                 <IconThumbUp className="h-3 w-3" />
-                                {ques.author.reputation}
+                                {ques.author?.reputation || 0}
                             </span>
                         </div>
                     </div>

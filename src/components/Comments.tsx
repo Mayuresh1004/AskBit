@@ -10,6 +10,7 @@ import { IconTrash } from "@tabler/icons-react";
 import { ID, Models } from "appwrite";
 import Link from "next/link";
 import React from "react";
+import { Comment, User } from "@/src/types/database";
 
 const Comments = ({
     comments: _comments,
@@ -17,7 +18,7 @@ const Comments = ({
     typeId,
     className,
 }: {
-    comments: Models.RowList<Models.Row>;
+    comments: Comment[];
     type: "question" | "answer";
     typeId: string;
     className?: string;
@@ -45,10 +46,7 @@ const Comments = ({
             });
 
             setNewComment(() => "");
-            setComments(prev => ({
-                total: prev.total + 1,
-                rows: [{ ...response, author: user }, ...prev.rows],
-            }));
+            setComments(prev => [{ ...response, author: user } as any, ...prev]);
         } catch (error: any) {
             window.alert(error?.message || "Error creating comment");
         }
@@ -62,10 +60,7 @@ const Comments = ({
                 rowId: commentId,
             });
 
-            setComments(prev => ({
-                total: prev.total - 1,
-                rows: prev.rows.filter(comment => comment.$id !== commentId),
-            }));
+            setComments(prev => prev.filter(comment => comment.$id !== commentId));
         } catch (error: any) {
             window.alert(error?.message || "Error deleting comment");
         }
@@ -73,17 +68,17 @@ const Comments = ({
 
     return (
         <div className={cn("flex flex-col gap-2 pl-4", className)}>
-            {comments.rows.map(comment => (
+            {comments.map(comment => (
                 <React.Fragment key={comment.$id}>
                     <hr className="border-white/40" />
                     <div className="flex gap-2">
                         <p className="text-sm">
                             {comment.content} -{" "}
                             <Link
-                                href={`/users/${comment.authorId}/${slugify(comment.author.name)}`}
+                                href={`/users/${comment.authorId}/${slugify(comment.author?.name || 'Unknown')}`}
                                 className="text-orange-500 hover:text-orange-600"
                             >
-                                {comment.author.name}
+                                {comment.author?.name || 'Unknown'}
                             </Link>{" "}
                             <span className="opacity-60">
                                 {convertDateToRelativeTime(new Date(comment.$createdAt))}
