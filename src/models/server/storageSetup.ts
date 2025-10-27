@@ -1,6 +1,6 @@
 import { IndexType, Permission } from 'node-appwrite';
 import { tablesDB,storage } from './config';
-import env from '@/src/app/env';
+import env from '@/app/env';
 import { questionAttachmentBucket } from '../name';
 
 

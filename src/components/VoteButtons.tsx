@@ -1,9 +1,9 @@
 "use client";
 
-import { tablesDB } from "@/src/models/client/config";
-import { db, voteCollection } from "@/src/models/name";
-import { useAuthStore } from "@/src/store/Auth";
-import { cn } from "@/src/lib/utils";
+import { tablesDB } from "@/models/client/config";
+import { db, voteCollection } from "@/models/name";
+import { useAuthStore } from "@/store/Auth";
+import { cn } from "@/lib/utils";
 import { IconCaretUpFilled, IconCaretDownFilled } from "@tabler/icons-react";
 import { ID, Models, Query } from "appwrite";
 import { useRouter } from "next/navigation";
@@ -22,7 +22,7 @@ const VoteButtons = ({
     downvotes: Models.RowList<Models.Row>;
     className?: string;
 }) => {
-    const [votedRow, setVotedRow] = React.useState<Models.Row | null>(); // undefined means not fetched yet
+    const [votedRow, setVotedRow] = React.useState<(Models.Row & { voteStatus?: string }) | null>(); // undefined means not fetched yet
     const [voteResult, setVoteResult] = React.useState<number>(upvotes.total - downvotes.total);
 
     const { user } = useAuthStore();

@@ -1,6 +1,6 @@
-import { answerCollection, db, questionCollection, voteCollection } from "@/src/models/name";
-import { tablesDB, users } from "@/src/models/server/config";
-import { UserPrefs } from "@/src/store/Auth";
+import { answerCollection, db, questionCollection, voteCollection } from "@/models/name";
+import { tablesDB, users } from "@/models/server/config";
+import { UserPrefs } from "@/store/Auth";
 import { NextRequest, NextResponse } from "next/server";
 import { ID, Query } from "node-appwrite";
 

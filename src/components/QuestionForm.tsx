@@ -1,18 +1,18 @@
 "use client";
 
-import RTE from "@/src/components/RTE";
-import { Input } from "@/src/components/ui/input";
-import { Label } from "@/src/components/ui/label";
-import { useAuthStore } from "@/src/store/Auth";
-import { cn } from "@/src/lib/utils";
-import slugify from "@/src/utils/slugify";
+import RTE from "@/components/RTE";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useAuthStore } from "@/store/Auth";
+import { cn } from "@/lib/utils";
+import slugify from "@/utils/slugify";
 import { IconX } from "@tabler/icons-react";
 import { Models, ID } from "appwrite";
 import { useRouter } from "next/navigation";
 import React from "react";
-import { tablesDB, storage } from "@/src/models/client/config";
-import { db, questionAttachmentBucket, questionCollection } from "@/src/models/name";
-import { Confetti } from "@/src/components/magicui/confetti";
+import { tablesDB, storage } from "@/models/client/config";
+import { db, questionAttachmentBucket, questionCollection } from "@/models/name";
+import confetti from "canvas-confetti";
 import { Meteors } from "./magicui/meteors";
 
 const LabelInputContainer = ({
@@ -40,7 +40,7 @@ const LabelInputContainer = ({
  * ![INFO]: for buttons, refer to https://ui.aceternity.com/components/tailwindcss-buttons
  * ******************************************************************************
  */
-const QuestionForm = ({ question }: { question?: Models.Row }) => {
+const QuestionForm = ({ question }: { question?: Models.Row & { title?: string; content?: string; tags?: string[]; attachmentId?: string } }) => {
     const { user } = useAuthStore();
     const [tag, setTag] = React.useState("");
     const router = useRouter();
@@ -63,7 +63,7 @@ const QuestionForm = ({ question }: { question?: Models.Row }) => {
         const frame = () => {
             if (Date.now() > end) return;
 
-            Confetti({
+            confetti({
                 particleCount: 2,
                 angle: 60,
                 spread: 55,
@@ -71,7 +71,7 @@ const QuestionForm = ({ question }: { question?: Models.Row }) => {
                 origin: { x: 0, y: 0.5 },
                 colors: colors,
             });
-            Confetti({
+            confetti({
                 particleCount: 2,
                 angle: 120,
                 spread: 55,
@@ -119,7 +119,7 @@ const QuestionForm = ({ question }: { question?: Models.Row }) => {
         const attachmentId = await (async () => {
             if (!formData.attachment) return question?.attachmentId as string;
 
-            await storage.deleteFile(questionAttachmentBucket, question.attachmentId);
+            await storage.deleteFile(questionAttachmentBucket, question.attachmentId!);
 
             const file = await storage.createFile(
                 questionAttachmentBucket,

@@ -1,8 +1,8 @@
-import Answers from "@/src/components/Answers";
-import Comments from "@/src/components/Comments";
-import { MarkdownPreview } from "@/src/components/RTE";
-import VoteButtons from "@/src/components/VoteButtons";
-import { avatars } from "@/src/models/client/config";
+import Answers from "@/components/Answers";
+import Comments from "@/components/Comments";
+import { MarkdownPreview } from "@/components/RTE";
+import VoteButtons from "@/components/VoteButtons";
+import { avatars } from "@/models/client/config";
 import {
     answerCollection,
     db,
@@ -10,42 +10,43 @@ import {
     questionCollection,
     commentCollection,
     questionAttachmentBucket,
-} from "@/src/models/name";
-import { tablesDB, users } from "@/src/models/server/config";
-import { storage } from "@/src/models/client/config";
-import { UserPrefs } from "@/src/store/Auth";
-import convertDateToRelativeTime from "@/src/utils/relativeTime";
-import slugify from "@/src/utils/slugify";
+} from "@/models/name";
+import { tablesDB, users } from "@/models/server/config";
+import { storage } from "@/models/client/config";
+import { UserPrefs } from "@/store/Auth";
+import convertDateToRelativeTime from "@/utils/relativeTime";
+import slugify from "@/utils/slugify";
 import { IconEdit } from "@tabler/icons-react";
 import Link from "next/link";
 import { Query } from "node-appwrite";
 import React from "react";
-import { TracingBeam } from "@/src/components/ui/tracing-beam";
+import { TracingBeam } from "@/components/ui/tracing-beam";
 import DeleteQuestion from "./DeleteQuestion";
 import EditQuestion from "./EditQuestion";
-import { Particles } from "@/src/components/magicui/particles";
-import { ShimmerButton } from "@/src/components/magicui/shimmer-button";
+import { Particles } from "@/components/magicui/particles";
+import { ShimmerButton } from "@/components/magicui/shimmer-button";
 
-const Page = async ({ params }: { params: { quesId: string; quesName: string } }) => {
+const Page = async ({ params }: { params: Promise<{ quesId: string; quesName: string }> }) => {
+    const { quesId, quesName } = await params;
     const [question, answers, upvotes, downvotes, comments] = await Promise.all([
         tablesDB.getRow({
             databaseId: db,
             tableId: questionCollection,
-            rowId: params.quesId,
+            rowId: quesId,
         }),
         tablesDB.listRows({
             databaseId: db,
             tableId: answerCollection,
             queries: [
                 Query.orderDesc("$createdAt"),
-                Query.equal("questionId", params.quesId),
+                Query.equal("questionId", quesId),
             ],
         }),
         tablesDB.listRows({
             databaseId: db,
             tableId: voteCollection,
             queries: [
-                Query.equal("typeId", params.quesId),
+                Query.equal("typeId", quesId),
                 Query.equal("type", "question"),
                 Query.equal("voteStatus", "upvoted"),
                 Query.limit(1), // for optimization
@@ -55,7 +56,7 @@ const Page = async ({ params }: { params: { quesId: string; quesName: string } }
             databaseId: db,
             tableId: voteCollection,
             queries: [
-                Query.equal("typeId", params.quesId),
+                Query.equal("typeId", quesId),
                 Query.equal("type", "question"),
                 Query.equal("voteStatus", "downvoted"),
                 Query.limit(1), // for optimization
@@ -66,7 +67,7 @@ const Page = async ({ params }: { params: { quesId: string; quesName: string } }
             tableId: commentCollection,
             queries: [
                 Query.equal("type", "question"),
-                Query.equal("typeId", params.quesId),
+                Query.equal("typeId", quesId),
                 Query.orderDesc("$createdAt"),
             ],
         }),
@@ -206,7 +207,7 @@ const Page = async ({ params }: { params: { quesId: string; quesName: string } }
                                     storage.getFilePreview(
                                         questionAttachmentBucket,
                                         question.attachmentId
-                                    ).href
+                                    )
                                 }
                                 alt={question.title}
                                 className="mt-3 rounded-lg"
@@ -226,7 +227,7 @@ const Page = async ({ params }: { params: { quesId: string; quesName: string } }
                         <div className="mt-4 flex items-center justify-end gap-1">
                             <picture>
                                 <img
-                                    src={avatars.getInitials(author.name, 36, 36).href}
+                                    src={avatars.getInitials(author.name, 36, 36)}
                                     alt={author.name}
                                     className="rounded-lg"
                                 />
@@ -244,7 +245,7 @@ const Page = async ({ params }: { params: { quesId: string; quesName: string } }
                             </div>
                         </div>
                         <Comments
-                            comments={comments}
+                            comments={comments as any}
                             className="mt-4"
                             type="question"
                             typeId={question.$id}
@@ -252,7 +253,7 @@ const Page = async ({ params }: { params: { quesId: string; quesName: string } }
                         <hr className="my-4 border-white/40" />
                     </div>
                 </div>
-                <Answers answers={answers} questionId={question.$id} />
+                <Answers answers={answers as any} questionId={question.$id} />
             </div>
         </TracingBeam>
     );

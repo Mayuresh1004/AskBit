@@ -1,8 +1,8 @@
 "use client";
 
-import { tablesDB } from "@/src/models/client/config";
-import { db, questionCollection } from "@/src/models/name";
-import { useAuthStore } from "@/src/store/Auth";
+import { tablesDB } from "@/models/client/config";
+import { db, questionCollection } from "@/models/name";
+import { useAuthStore } from "@/store/Auth";
 import { IconTrash } from "@tabler/icons-react";
 import { useRouter } from "next/navigation";
 import React from "react";

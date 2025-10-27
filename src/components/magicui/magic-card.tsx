@@ -3,7 +3,7 @@
 import React, { useCallback, useEffect } from "react"
 import { motion, useMotionTemplate, useMotionValue } from "motion/react"
 
-import { cn } from "@/src/lib/utils"
+import { cn } from "@/lib/utils"
 
 interface MagicCardProps {
   children?: React.ReactNode

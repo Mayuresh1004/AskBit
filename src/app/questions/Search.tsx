@@ -1,10 +1,10 @@
 "use client";
 
-import { Input } from "@/src/components/ui/input";
+import { Input } from "@/components/ui/input";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import React from "react";
+import React, { Suspense } from "react";
 
-const Search = () => {
+const SearchForm = () => {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -44,6 +44,14 @@ const Search = () => {
         Search
       </button>
     </form>
+  );
+};
+
+const Search = () => {
+  return (
+    <Suspense fallback={<div>Loading search...</div>}>
+      <SearchForm />
+    </Suspense>
   );
 };
 

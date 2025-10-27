@@ -1,6 +1,6 @@
 import { IndexType, Permission } from 'node-appwrite';
 import { tablesDB } from './config';
-import env from '@/src/app/env';
+import env from '@/app/env';
 import { db, questionCollection, voteCollection } from '../name';
 
 export default async function createVoteTable() {
