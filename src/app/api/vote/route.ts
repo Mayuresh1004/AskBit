@@ -23,103 +23,116 @@ export async function POST(request: NextRequest){
             ]
         })
 
+        let newVoteRow = null;
+        
         if (response.rows.length > 0) {
+            // User already voted - toggle behavior
+            const existingVote = response.rows[0];
             
-            await tablesDB.deleteRow({
+            if (existingVote.voteStatus === voteStatus) {
+                // Same vote clicked - remove the vote (unvote)
+                await tablesDB.deleteRow({
+                    databaseId: db,
+                    tableId: voteCollection,
+                    rowId: existingVote.$id,
+                });
+
+                // Decrease the reputation
+                const QuestionOrAnswer = await tablesDB.getRow({
+                    databaseId: db,
+                    tableId: type==="question"? questionCollection : answerCollection,
+                    rowId: typeId,
+                });
+
+                const authorPrefs = await users.getPrefs<UserPrefs>(QuestionOrAnswer.authorId);
+                await users.updatePrefs<UserPrefs>(QuestionOrAnswer.authorId, {
+                    reputation: voteStatus === "upvoted" ? Number(authorPrefs.reputation)-1 : Number(authorPrefs.reputation)+1
+                });
+                
+                newVoteRow = null; // Vote removed
+            } else {
+                // Different vote - update existing vote
+                await tablesDB.deleteRow({
+                    databaseId: db,
+                    tableId: voteCollection,
+                    rowId: existingVote.$id,
+                });
+
+                // Increase reputation for new vote, decrease for old vote
+                const QuestionOrAnswer = await tablesDB.getRow({
+                    databaseId: db,
+                    tableId: type==="question"? questionCollection : answerCollection,
+                    rowId: typeId,
+                });
+
+                const authorPrefs = await users.getPrefs<UserPrefs>(QuestionOrAnswer.authorId);
+                
+                // Add effect of new vote and remove effect of old vote
+                const reputationChange = (voteStatus === "upvoted" ? 2 : -2);
+                await users.updatePrefs<UserPrefs>(QuestionOrAnswer.authorId, {
+                    reputation: Number(authorPrefs.reputation) + reputationChange
+                });
+                
+                // Create new vote row
+                newVoteRow = await tablesDB.createRow({
+                    databaseId: db,
+                    tableId: voteCollection,
+                    rowId: ID.unique(),
+                    data: {
+                        type: type,
+                        typeId: typeId,
+                        votedById: votedById,
+                        voteStatus: voteStatus
+                    }
+                });
+            }
+        } else {
+            // No existing vote - create new vote
+            newVoteRow = await tablesDB.createRow({
                 databaseId: db,
                 tableId: voteCollection,
-                rowId: response.rows[0].$id,
-            })
-
-            //decrease the reputation
-            const QuestionOrAnswer = await tablesDB.getRow({
-                databaseId: db,
-                tableId: type==="question"? questionCollection : answerCollection ,
-                rowId: typeId,
-                queries: [
-                    Query.equal("type",type==="question"? questionCollection : answerCollection ),
-                    Query.equal("typeId",typeId ),
-                ]
-            })
-
-            const authorPrefs = await users.getPrefs<UserPrefs>(QuestionOrAnswer.authorId)
-
-            await users.updatePrefs<UserPrefs>(QuestionOrAnswer.authorId,{
-                reputation:response.rows[0].voteStatus === "upvoted" ? Number(authorPrefs.reputation)-1 : Number(authorPrefs.reputation)+1
-            })
-
-        }
-        //that means pev vote doesnt exist or vote state changes
-        if (response.rows[0]?.voteStatus !== voteStatus ) {
-            const row = await tablesDB.createRow({
-                databaseId: db,
-                tableId: voteCollection,
-                rowId:ID.unique(),
+                rowId: ID.unique(),
                 data: {
                     type: type,
                     typeId: typeId,
                     votedById: votedById,
                     voteStatus: voteStatus
                 }
-            })
+            });
 
-            //increase or decrease the reputation
-
-             const QuestionOrAnswer = await tablesDB.getRow({
+            // Increase reputation
+            const QuestionOrAnswer = await tablesDB.getRow({
                 databaseId: db,
-                tableId: type==="question"? questionCollection : answerCollection ,
+                tableId: type==="question"? questionCollection : answerCollection,
                 rowId: typeId,
-                queries: [
-                    Query.equal("type",type==="question"? questionCollection : answerCollection ),
-                    Query.equal("typeId",typeId ),
-                ]
-            })
+            });
 
-            const authorPrefs = await users.getPrefs<UserPrefs>(QuestionOrAnswer.authorId)
-
-            // if vote was present
-            if (response.rows[0]) {
-                await users.updatePrefs<UserPrefs>(QuestionOrAnswer.authorId,{
-                    reputation: response.rows[0].voteStatus === "upvoted" ? Number(authorPrefs.reputation)-1 : Number(authorPrefs.reputation)+1
-                })
-            } else{
-                await users.updatePrefs<UserPrefs>(QuestionOrAnswer.authorId,{
-                    reputation: voteStatus === "upvoted"? Number(authorPrefs.reputation)+1 : Number(authorPrefs.reputation)-1
-                })
-            }
+            const authorPrefs = await users.getPrefs<UserPrefs>(QuestionOrAnswer.authorId);
+            await users.updatePrefs<UserPrefs>(QuestionOrAnswer.authorId, {
+                reputation: voteStatus === "upvoted"? Number(authorPrefs.reputation)+1 : Number(authorPrefs.reputation)-1
+            });
         }
 
-        const [upvotes, downvotes] = await Promise.all([
-            tablesDB.listRows({
-                databaseId: db,
-                tableId: voteCollection,
-                queries: [
-                    Query.equal("type",type),
-                    Query.equal("typeId",typeId),
-                    Query.equal("votedById",votedById ),
-                    Query.equal("voteStatus", "upvoted"),
-                    Query.limit(1)
-                ]
-            }),
-            tablesDB.listRows({
-                databaseId: db,
-                tableId: voteCollection,
-                queries: [
-                    Query.equal("type",type),
-                    Query.equal("typeId",typeId),
-                    Query.equal("votedById",votedById ),
-                    Query.equal("voteStatus", "downvoted"),
-                    Query.limit(1)
-                ]
-            }),
-        ])
+        // Get total vote counts for display
+        const allVotes = await tablesDB.listRows({
+            databaseId: db,
+            tableId: voteCollection,
+            queries: [
+                Query.equal("type", type),
+                Query.equal("typeId", typeId),
+            ]
+        });
+
+        const upCount = allVotes.rows.filter(v => v.voteStatus === "upvoted").length;
+        const downCount = allVotes.rows.filter(v => v.voteStatus === "downvoted").length;
 
         return NextResponse.json(
             {
                 data: {
-                    row: null, voteResult: upvotes.total - downvotes.total
+                    row: newVoteRow,
+                    voteResult: upCount - downCount
                 },
-                message: "message handled"
+                message: "vote handled"
             },
             {
                 status: 200

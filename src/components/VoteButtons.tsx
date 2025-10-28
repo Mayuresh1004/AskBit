@@ -61,6 +61,9 @@ const VoteButtons = ({
         try {
             const response = await fetch(`/api/vote`, {
                 method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
                 body: JSON.stringify({
                     votedById: user.$id,
                     voteStatus: "upvoted",
@@ -74,9 +77,23 @@ const VoteButtons = ({
             if (!response.ok) throw data;
 
             setVoteResult(() => data.data.voteResult);
-            setVotedRow(() => data.data.row);
+            setVotedRow(() => data.data.row || null);
+            
+            // Refetch current user vote to update highlighting
+            const currentVote = await tablesDB.listRows({
+                databaseId: db,
+                tableId: voteCollection,
+                queries: [
+                    Query.equal("type", type),
+                    Query.equal("typeId", id),
+                    Query.equal("votedById", user.$id),
+                ],
+            });
+            const votes = (currentVote as any).documents || (currentVote as any).rows || [];
+            setVotedRow(() => votes[0] || null);
         } catch (error: any) {
-            window.alert(error?.message || "Something went wrong");
+            console.error("Vote error:", error);
+            window.alert(error?.message || error?.error || "Something went wrong");
         }
     };
 
@@ -88,6 +105,9 @@ const VoteButtons = ({
         try {
             const response = await fetch(`/api/vote`, {
                 method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
                 body: JSON.stringify({
                     votedById: user.$id,
                     voteStatus: "downvoted",
@@ -101,11 +121,30 @@ const VoteButtons = ({
             if (!response.ok) throw data;
 
             setVoteResult(() => data.data.voteResult);
-            setVotedRow(() => data.data.row);
+            setVotedRow(() => data.data.row || null);
+            
+            // Refetch current user vote to update highlighting
+            const currentVote = await tablesDB.listRows({
+                databaseId: db,
+                tableId: voteCollection,
+                queries: [
+                    Query.equal("type", type),
+                    Query.equal("typeId", id),
+                    Query.equal("votedById", user.$id),
+                ],
+            });
+            const votes = (currentVote as any).documents || (currentVote as any).rows || [];
+            setVotedRow(() => votes[0] || null);
         } catch (error: any) {
-            window.alert(error?.message || "Something went wrong");
+            console.error("Vote error:", error);
+            window.alert(error?.message || error?.error || "Something went wrong");
         }
     };
+
+    // Debug logging
+    React.useEffect(() => {
+        console.log("Current vote state:", { votedRow, voteResult, id });
+    }, [votedRow, voteResult, id]);
 
     return (
         <div className={cn("flex shrink-0 flex-col items-center justify-start gap-y-4 text-white", className)}>

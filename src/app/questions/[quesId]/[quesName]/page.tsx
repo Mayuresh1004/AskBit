@@ -215,9 +215,9 @@ const Page = async ({ params }: { params: Promise<{ quesId: string; quesName: st
                         <DeleteQuestion questionId={question.$id} authorId={question.authorId} />
                     </div>
                     <div className="w-full overflow-auto">
-                        <div className="p-0">
+                        <div className="rounded-xl border border-orange-500/20 bg-white/5 p-6 backdrop-blur-sm">
                             <MarkdownPreview 
-                                className="prose prose-invert max-w-none prose-headings:text-white prose-p:text-white prose-a:text-white prose-strong:text-white prose-code:text-white prose-pre:bg-transparent prose-pre:text-white [&>div]:bg-transparent [&>div]:text-white [&>div>p]:text-white" 
+                                className="rounded-lg p-4 prose prose-invert  max-w-none prose-headings:text-white prose-p:text-white prose-a:text-white prose-strong:text-white prose-code:text-white prose-pre:bg-transparent prose-pre:text-white [&>div]:bg-transparent [&>div]:text-white [&>div>p]:text-white" 
                                 data-color-mode="dark"
                                 source={question.content} 
                             />

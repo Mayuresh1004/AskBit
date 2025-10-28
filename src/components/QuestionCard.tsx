@@ -35,7 +35,7 @@ const QuestionCard = ({ ques }: { ques: Question }) => {
                             href={`/questions/${ques.$id}/${slugify(ques.title)}`}
                             className="group-hover:text-orange-400 transition-colors duration-200"
                         >
-                            <h2 className="text-xl font-semibold text-white">
+                            <h2 className="text-xl font-semibold text-white ">
                                 {ques.title}
                             </h2>
                         </Link>
