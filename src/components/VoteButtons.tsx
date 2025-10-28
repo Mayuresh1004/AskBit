@@ -24,7 +24,7 @@ const VoteButtons = ({
     className?: string;
 }) => {
     const [votedRow, setVotedRow] = React.useState<Vote | null>(); // undefined means not fetched yet
-    const [voteResult, setVoteResult] = React.useState<number>(upvotes.length - downvotes.length);
+    const [voteResult, setVoteResult] = React.useState<number>((upvotes?.length || 0) - (downvotes?.length || 0));
 
     const { user } = useAuthStore();
     const router = useRouter();
@@ -32,16 +32,23 @@ const VoteButtons = ({
     React.useEffect(() => {
         (async () => {
             if (user) {
-                const response = await tablesDB.listRows({
-                    databaseId: db,
-                    tableId: voteCollection,
-                    queries: [
-                        Query.equal("type", type),
-                        Query.equal("typeId", id),
-                        Query.equal("votedById", user.$id),
-                    ],
-                });
-                setVotedRow(() => (response as any).documents[0] || null);
+                try {
+                    const response = await tablesDB.listRows({
+                        databaseId: db,
+                        tableId: voteCollection,
+                        queries: [
+                            Query.equal("type", type),
+                            Query.equal("typeId", id),
+                            Query.equal("votedById", user.$id),
+                        ],
+                    });
+                    // Handle both 'documents' and 'rows' properties (different SDK versions)
+                    const votes = (response as any).documents || (response as any).rows || [];
+                    setVotedRow(() => votes[0] || null);
+                } catch (error) {
+                    console.error("Error fetching vote:", error);
+                    setVotedRow(() => null);
+                }
             }
         })();
     }, [user, id, type]);
@@ -101,13 +108,13 @@ const VoteButtons = ({
     };
 
     return (
-        <div className={cn("flex shrink-0 flex-col items-center justify-start gap-y-4", className)}>
+        <div className={cn("flex shrink-0 flex-col items-center justify-start gap-y-4 text-white", className)}>
             <button
                 className={cn(
-                    "flex h-10 w-10 items-center justify-center rounded-full border p-1 duration-200 hover:bg-white/10",
+                    "flex h-10 w-10 items-center justify-center rounded-full border p-1 duration-200 hover:bg-white/10 text-white",
                     votedRow && votedRow.voteStatus === "upvoted"
                         ? "border-orange-500 text-orange-500"
-                        : "border-white/30"
+                        : "border-white/60"
                 )}
                 onClick={toggleUpvote}
             >
@@ -116,10 +123,10 @@ const VoteButtons = ({
             <span>{voteResult}</span>
             <button
                 className={cn(
-                    "flex h-10 w-10 items-center justify-center rounded-full border p-1 duration-200 hover:bg-white/10",
+                    "flex h-10 w-10 items-center justify-center rounded-full border p-1 duration-200 hover:bg-white/10 text-white",
                     votedRow && votedRow.voteStatus === "downvoted"
                         ? "border-orange-500 text-orange-500"
-                        : "border-white/30"
+                        : "border-white/60"
                 )}
                 onClick={toggleDownvote}
             >

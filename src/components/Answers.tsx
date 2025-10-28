@@ -79,7 +79,7 @@ const Answers = ({
 
     return (
         <>
-            <h2 className="mb-4 text-xl">{answers.length} Answers</h2>
+            <h2 className="mb-4 text-xl text-white">{answers.length} Answers</h2>
             {answers.map(answer => (
                 <div key={answer.$id} className="flex gap-4">
                     <div className="flex shrink-0 flex-col items-center gap-4">
@@ -91,7 +91,7 @@ const Answers = ({
                         />
                         {user?.$id === answer.authorId ? (
                             <button
-                                className="flex h-10 w-10 items-center justify-center rounded-full border border-red-500 p-1 text-red-500 duration-200 hover:bg-red-500/10"
+                                className="flex h-10 w-10 items-center justify-center rounded-full border border-white/60 p-1 text-white duration-200 hover:bg-white/10"
                                 onClick={() => deleteAnswer(answer.$id)}
                             >
                                 <IconTrash className="h-4 w-4" />
@@ -99,8 +99,8 @@ const Answers = ({
                         ) : null}
                     </div>
                     <div className="w-full overflow-auto">
-                        <MarkdownPreview className="rounded-xl p-4" source={answer.content} />
-                        <div className="mt-4 flex items-center justify-end gap-1">
+                        <MarkdownPreview className="rounded-xl p-4 text-white" source={answer.content} />
+                        <div className="mt-4 flex items-center justify-end gap-1 text-white">
                             <picture>
                                 <img
                                     src={avatars.getInitials(answer.author?.name || 'Unknown', 36, 36).toString()}
@@ -111,11 +111,11 @@ const Answers = ({
                             <div className="block leading-tight">
                                 <Link
                                     href={`/users/${answer.author?.$id}/${slugify(answer.author?.name || 'Unknown')}`}
-                                    className="text-orange-500 hover:text-orange-600"
+                                    className="text-white hover:text-white/80"
                                 >
                                     {answer.author?.name || 'Unknown'}
                                 </Link>
-                                <p>
+                                <p className="text-white">
                                     <strong>{answer.author?.reputation || 0}</strong>
                                 </p>
                             </div>

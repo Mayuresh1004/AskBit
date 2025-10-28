@@ -67,16 +67,16 @@ const Comments = ({
     };
 
     return (
-        <div className={cn("flex flex-col gap-2 pl-4", className)}>
+        <div className={cn("flex flex-col gap-2 pl-4 text-white", className)}>
             {comments.map(comment => (
                 <React.Fragment key={comment.$id}>
                     <hr className="border-white/40" />
                     <div className="flex gap-2">
-                        <p className="text-sm">
+                        <p className="text-sm text-white">
                             {comment.content} -{" "}
                             <Link
                                 href={`/users/${comment.authorId}/${slugify(comment.author?.name || 'Unknown')}`}
-                                className="text-orange-500 hover:text-orange-600"
+                                className="text-white hover:text-white/80"
                             >
                                 {comment.author?.name || 'Unknown'}
                             </Link>{" "}
@@ -87,7 +87,7 @@ const Comments = ({
                         {user?.$id === comment.authorId ? (
                             <button
                                 onClick={() => deleteComment(comment.$id)}
-                                className="shrink-0 text-red-500 hover:text-red-600"
+                                className="shrink-0 text-white hover:text-white/80"
                             >
                                 <IconTrash className="h-4 w-4" />
                             </button>

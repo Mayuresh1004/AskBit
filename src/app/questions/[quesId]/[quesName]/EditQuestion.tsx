@@ -20,7 +20,7 @@ const EditQuestion = ({
     return user?.$id === authorId ? (
         <Link
             href={`/questions/${questionId}/${slugify(questionTitle)}/edit`}
-            className="flex h-10 w-10 items-center justify-center rounded-full border p-1 duration-200 hover:bg-white/10"
+            className="flex h-10 w-10 items-center justify-center rounded-full border border-white/60 p-1 text-white duration-200 hover:bg-white/10"
         >
             <IconEdit className="h-4 w-4" />
         </Link>

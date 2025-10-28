@@ -39,7 +39,7 @@ export interface Comment extends BaseRow {
 export interface Vote extends BaseRow {
     type: "question" | "answer";
     typeId: string;
-    authorId: string;
+    votedById: string;
     voteStatus: "upvoted" | "downvoted";
 }
 
