@@ -4,6 +4,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { ID } from "node-appwrite";
 import { UserPrefs } from '@/src/store/Auth'
 
+// Ensure this API runs as a Node.js Serverless Function on Vercel (not Edge)
+export const runtime = 'nodejs'
+// Disable caching for dynamic DB mutations
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: NextRequest){
     try {
 
